@@ -1,0 +1,87 @@
+v-scroll {
+  --v-scroll-gap: 10px;
+  --v-scroll-width: 10px;
+  --v-scroll-radius: 999px;
+  --v-scroll-min-bar: 16px;
+  --v-scroll-track-bg: rgb(34 197 94 / 18%);
+  --v-scroll-track-outline: rgb(34 197 94 / 28%);
+  --v-scroll-bar-bg: #22c55e;
+  --v-scroll-bar-bg-hover: #16a34a;
+  --v-scroll-bar-bg-dragging: #15803d;
+  --v-scroll-cursor: url('/scroll.svg') 10 10, ns-resize;
+  --v-scroll-cursor-grab: url('/grab.svg') 7 7, grabbing;
+  position: relative;
+  display: block;
+}
+
+v-scroll > .v_scroll_view {
+  height: 100%;
+  overflow: auto;
+  padding-right: calc(var(--v-scroll-width) + var(--v-scroll-gap));
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+v-scroll > .v_scroll_view::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+v-scroll > .v_scroll_view > .v_scroll_body {
+  min-height: 100%;
+}
+
+v-scroll > .v_scroll_track {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: var(--v-scroll-width);
+  margin: 0;
+  border-radius: var(--v-scroll-radius);
+  background: var(--v-scroll-track-bg);
+  box-shadow: inset 0 0 0 1px var(--v-scroll-track-outline);
+  opacity: 0;
+  transition:
+    opacity 160ms ease,
+    background 160ms ease;
+  cursor: var(--v-scroll-cursor);
+}
+
+v-scroll > .v_scroll_track > .v_scroll_bar {
+  position: absolute;
+  inset: var(--bar-offset, 0px) 0 auto;
+  display: block;
+  min-height: var(--v-scroll-min-bar);
+  height: var(--bar-size, 0px);
+  border-radius: inherit;
+  background: var(--v-scroll-bar-bg);
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 6%),
+    0 6px 12px rgb(34 197 94 / 30%);
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+  cursor: inherit;
+}
+
+v-scroll[data-scrollable] > .v_scroll_track {
+  opacity: 1;
+}
+
+v-scroll > .v_scroll_track:hover {
+  background: rgb(34 197 94 / 24%);
+}
+
+v-scroll > .v_scroll_track > .v_scroll_bar:hover {
+  background: var(--v-scroll-bar-bg-hover);
+  transform: scaleX(1.06);
+}
+
+v-scroll[data-dragging] > .v_scroll_track,
+v-scroll[data-dragging] > .v_scroll_track > .v_scroll_bar {
+  cursor: var(--v-scroll-cursor-grab);
+}
+
+v-scroll[data-dragging] > .v_scroll_track > .v_scroll_bar {
+  background: var(--v-scroll-bar-bg-dragging);
+  transform: scaleX(1.06);
+}
