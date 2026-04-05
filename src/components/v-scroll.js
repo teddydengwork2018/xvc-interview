@@ -23,6 +23,9 @@ class VScroll extends HTMLElement {
     this.viewport = shadow.querySelector('.viewport');
     this.thumb = shadow.querySelector('.thumb');
     this.rail = shadow.querySelector('.rail');
+    this.destroyed = false;
+    this.bound = false;
+    this.observing = false;
     this.dragging = false;
     this.start_y = 0;
     this.start_scroll = 0;
@@ -89,27 +92,77 @@ class VScroll extends HTMLElement {
     this.onRailLeave = ()=> {
       this.scheduleHide();
     };
+  }
+
+  connectedCallback() {
+    this.destroyed = false;
+    this.bindEvents();
+    this.startObserving();
+    this.update();
+  }
+
+  disconnectedCallback() {
+    this.destroy();
+  }
+
+  bindEvents() {
+    if (this.bound) {
+      return;
+    }
 
     this.viewport.addEventListener('scroll', this.onScroll);
     this.thumb.addEventListener('pointerdown', this.onThumbDown);
     this.rail.addEventListener('pointerenter', this.onRailEnter);
     this.rail.addEventListener('pointerleave', this.onRailLeave);
+    this.bound = true;
   }
 
-  connectedCallback() {
-    this.resize_observer.observe(this);
-    this.resize_observer.observe(this.viewport);
-    this.update();
-  }
+  unbindEvents() {
+    if (!this.bound) {
+      return;
+    }
 
-  disconnectedCallback() {
-    this.resize_observer.disconnect();
-    this.clearHideTimer();
-    document.body.style.removeProperty('cursor');
-    window.removeEventListener('pointermove', this.onMove);
-    window.removeEventListener('pointerup', this.onUp);
+    this.viewport.removeEventListener('scroll', this.onScroll);
+    this.thumb.removeEventListener('pointerdown', this.onThumbDown);
     this.rail.removeEventListener('pointerenter', this.onRailEnter);
     this.rail.removeEventListener('pointerleave', this.onRailLeave);
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+    this.bound = false;
+  }
+
+  startObserving() {
+    if (this.observing) {
+      return;
+    }
+
+    this.resize_observer.observe(this);
+    this.resize_observer.observe(this.viewport);
+    this.observing = true;
+  }
+
+  stopObserving() {
+    if (!this.observing) {
+      return;
+    }
+
+    this.resize_observer.disconnect();
+    this.observing = false;
+  }
+
+  destroy() {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.destroyed = true;
+    this.dragging = false;
+    this.removeAttribute('dragging');
+    this.removeAttribute('active');
+    this.stopObserving();
+    this.clearHideTimer();
+    document.body.style.removeProperty('cursor');
+    this.unbindEvents();
   }
 
   update() {
