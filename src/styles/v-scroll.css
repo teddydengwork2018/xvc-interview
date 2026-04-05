@@ -54,10 +54,13 @@ v-scroll::part(thumb) {
   left: 50%;
   right: 0;
   width: 35%;
+  display: var(--thumb_display, block);
+  height: var(--thumb_height, var(--v-scroll-min-bar));
   min-height: var(--v-scroll-min-bar);
   border-radius: var(--v-scroll-radius);
   background: var(--v-scroll-bar-bg);
   cursor: inherit;
+  transform: translateX(-50%) translateY(var(--thumb_y, 0px));
   transition:
     background 0.2s,
     left 0.22s ease,

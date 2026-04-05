@@ -120,19 +120,19 @@ class VScroll extends HTMLElement {
     if (scroll_height <= height) {
       this.removeAttribute('scrollable');
       this.removeAttribute('active');
-      this.thumb.style.display = 'none';
+      this.thumb.style.setProperty('--thumb_display', 'none');
       return;
     }
 
     this.setAttribute('scrollable', '');
-    this.thumb.style.display = 'block';
+    this.thumb.style.setProperty('--thumb_display', 'block');
 
     const thumb_height = Math.max((height / scroll_height) * height, 30);
     const max = height - thumb_height;
     const y = (top / (scroll_height - height)) * max;
 
-    this.thumb.style.height = `${thumb_height}px`;
-    this.thumb.style.transform = `translateX(-50%) translateY(${y}px)`;
+    this.thumb.style.setProperty('--thumb_height', `${thumb_height}px`);
+    this.thumb.style.setProperty('--thumb_y', `${y}px`);
   }
 }
 
