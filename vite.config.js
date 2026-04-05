@@ -45,6 +45,7 @@ const createThemePlugin = ()=> {
 };
 
 export default defineConfig({
+  base: './',
   plugins: [createThemePlugin()],
   server: {
     host: '0.0.0.0',

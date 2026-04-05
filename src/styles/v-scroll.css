@@ -10,8 +10,8 @@ v-scroll {
   --v-scroll-bar-bg: #c7c7c7;
   --v-scroll-bar-bg-hover: #adadad;
   --v-scroll-bar-bg-dragging: #8f8f8f;
-  --v-scroll-cursor: url('/scroll.svg') 10 10, ns-resize;
-  --v-scroll-cursor-grab: url('/grab.svg') 7 7, grabbing;
+  --v-scroll-cursor: url('./scroll.svg') 10 10, ns-resize;
+  --v-scroll-cursor-grab: url('./grab.svg') 7 7, grabbing;
   position: relative;
   display: block;
 }

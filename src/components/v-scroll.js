@@ -2,6 +2,8 @@ import fallback_css_text from '/src/styles/v-scroll.css?inline';
 
 const TEMPLATE = document.createElement('template');
 const STYLE_ID = 'v-scroll-theme-style';
+const SCROLL_CURSOR_URL = new URL('./scroll.svg', document.baseURI).href;
+const GRAB_CURSOR_URL = new URL('./grab.svg', document.baseURI).href;
 let theme_css_promise = null;
 
 const loadThemeCss = async()=> {
@@ -52,6 +54,8 @@ class VScroll extends HTMLElement {
     super();
 
     ensureThemeStyle();
+    this.style.setProperty('--v-scroll-cursor', `url('${SCROLL_CURSOR_URL}') 10 10, ns-resize`);
+    this.style.setProperty('--v-scroll-cursor-grab', `url('${GRAB_CURSOR_URL}') 7 7, grabbing`);
 
     const shadow = this.attachShadow({ mode: 'open' });
 
