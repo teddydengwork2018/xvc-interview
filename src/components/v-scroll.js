@@ -1,4 +1,39 @@
+import fallback_css_text from '/src/styles/v-scroll.css?inline';
+
 const TEMPLATE = document.createElement('template');
+const STYLE_ID = 'v-scroll-theme-style';
+let theme_css_promise = null;
+
+const loadThemeCss = async()=> {
+  try {
+    const theme_module = await import('$/v-scroll.js');
+
+    return theme_module.default || fallback_css_text;
+  } catch {
+    return fallback_css_text;
+  }
+};
+
+const ensureThemeStyle = async()=> {
+  theme_css_promise ||= loadThemeCss();
+
+  const css_text = await theme_css_promise;
+  const style = document.getElementById(STYLE_ID);
+
+  if (style) {
+    if (style.textContent !== css_text) {
+      style.textContent = css_text;
+    }
+
+    return;
+  }
+
+  const next_style = document.createElement('style');
+
+  next_style.id = STYLE_ID;
+  next_style.textContent = css_text;
+  document.head.append(next_style);
+};
 
 TEMPLATE.innerHTML = `
   <div class="viewport" part="viewport">
@@ -15,6 +50,8 @@ TEMPLATE.innerHTML = `
 class VScroll extends HTMLElement {
   constructor() {
     super();
+
+    ensureThemeStyle();
 
     const shadow = this.attachShadow({ mode: 'open' });
 
