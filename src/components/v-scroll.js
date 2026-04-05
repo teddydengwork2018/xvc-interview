@@ -28,10 +28,27 @@ class VScroll extends HTMLElement {
     this.observing = false;
     this.dragging = false;
     this.start_y = 0;
-    this.start_scroll = 0;
+    this.start_top = 0;
     this.hide_timer = 0;
     this.resize_observer = new ResizeObserver(()=>this.update());
 
+    this.getNumberVar = (name, fallback = 0)=> {
+      const value = getComputedStyle(this).getPropertyValue(name).trim();
+      const number = Number.parseFloat(value);
+
+      return Number.isNaN(number) ? fallback : number;
+    };
+    this.getMetrics = ()=> {
+      const height = this.viewport.clientHeight;
+      const scroll_height = this.viewport.scrollHeight;
+      const inset = this.getNumberVar('--v-scroll-thumb-inset', 3);
+      const min_height = this.getNumberVar('--v-scroll-min-bar', 30);
+      const available = Math.max(height - inset * 2, 0);
+      const thumb_height = Math.min(Math.max((height / scroll_height) * available, min_height), available);
+      const max_top = Math.max(available - thumb_height, 0);
+
+      return { height, scroll_height, inset, thumb_height, max_top };
+    };
     this.clearHideTimer = ()=> {
       clearTimeout(this.hide_timer);
       this.hide_timer = 0;
@@ -60,30 +77,45 @@ class VScroll extends HTMLElement {
         return;
       }
 
+      const { scroll_height, height, max_top } = this.getMetrics();
       const delta = event.clientY - this.start_y;
-      const scale = this.viewport.scrollHeight / this.viewport.clientHeight;
+      const next_top = Math.min(Math.max(this.start_top + delta, 0), max_top);
+      const ratio = max_top > 0 ? next_top / max_top : 0;
+      const max_scroll = Math.max(scroll_height - height, 0);
 
-      this.viewport.scrollTop = this.start_scroll + delta * scale;
+      this.viewport.scrollTop = ratio * max_scroll;
     };
     this.onUp = ()=> {
       this.dragging = false;
       this.removeAttribute('dragging');
       document.body.style.removeProperty('cursor');
+      document.body.style.removeProperty('user-select');
       this.scheduleHide();
       window.removeEventListener('pointermove', this.onMove);
       window.removeEventListener('pointerup', this.onUp);
+      window.removeEventListener('pointercancel', this.onUp);
     };
     this.onThumbDown = (event)=> {
+      event.preventDefault();
+
+      const { inset, thumb_height, max_top, scroll_height, height } = this.getMetrics();
+      const max_scroll = Math.max(scroll_height - height, 0);
+      const ratio = max_scroll > 0 ? this.viewport.scrollTop / max_scroll : 0;
+
       this.dragging = true;
       this.setAttribute('dragging', '');
       this.showRail();
       this.clearHideTimer();
       document.body.style.cursor = `url('/grab.svg') 7 7, grabbing`;
+      document.body.style.userSelect = 'none';
       this.start_y = event.clientY;
-      this.start_scroll = this.viewport.scrollTop;
+      this.start_top = Math.min(Math.max(ratio * max_top, 0), max_top);
+      this.thumb.style.setProperty('--thumb_y', `${this.start_top + inset}px`);
+      this.thumb.style.setProperty('--thumb_height', `${thumb_height}px`);
       this.thumb.setPointerCapture?.(event.pointerId);
       window.addEventListener('pointermove', this.onMove);
       window.addEventListener('pointerup', this.onUp);
+      window.addEventListener('pointercancel', this.onUp);
     };
     this.onRailEnter = ()=> {
       this.showRail();
@@ -162,12 +194,12 @@ class VScroll extends HTMLElement {
     this.stopObserving();
     this.clearHideTimer();
     document.body.style.removeProperty('cursor');
+    document.body.style.removeProperty('user-select');
     this.unbindEvents();
   }
 
   update() {
-    const height = this.viewport.clientHeight;
-    const scroll_height = this.viewport.scrollHeight;
+    const { height, scroll_height, inset, thumb_height, max_top } = this.getMetrics();
     const top = this.viewport.scrollTop;
 
     if (scroll_height <= height) {
@@ -180,9 +212,9 @@ class VScroll extends HTMLElement {
     this.setAttribute('scrollable', '');
     this.thumb.style.setProperty('--thumb_display', 'block');
 
-    const thumb_height = Math.max((height / scroll_height) * height, 30);
-    const max = height - thumb_height;
-    const y = (top / (scroll_height - height)) * max;
+    const max_scroll = Math.max(scroll_height - height, 0);
+    const ratio = max_scroll > 0 ? top / max_scroll : 0;
+    const y = inset + ratio * max_top;
 
     this.thumb.style.setProperty('--thumb_height', `${thumb_height}px`);
     this.thumb.style.setProperty('--thumb_y', `${y}px`);
