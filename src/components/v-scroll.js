@@ -97,12 +97,17 @@ class VScroll extends HTMLElement {
     this.showRail = ()=> {
       this.setAttribute('active', '');
     };
+    this.showExpandedRail = ()=> {
+      this.setAttribute('expanded', '');
+      this.showRail();
+    };
     this.hideRail = ()=> {
       if (this.dragging || this.rail.matches(':hover')) {
         return;
       }
 
       this.removeAttribute('active');
+      this.removeAttribute('expanded');
     };
     this.scheduleHide = ()=> {
       this.clearHideTimer();
@@ -145,7 +150,7 @@ class VScroll extends HTMLElement {
 
       this.dragging = true;
       this.setAttribute('dragging', '');
-      this.showRail();
+      this.showExpandedRail();
       this.clearHideTimer();
       document.body.style.cursor = `url('/grab.svg') 7 7, grabbing`;
       document.body.style.userSelect = 'none';
@@ -159,10 +164,11 @@ class VScroll extends HTMLElement {
       window.addEventListener('pointercancel', this.onUp);
     };
     this.onRailEnter = ()=> {
-      this.showRail();
+      this.showExpandedRail();
       this.clearHideTimer();
     };
     this.onRailLeave = ()=> {
+      this.removeAttribute('expanded');
       this.scheduleHide();
     };
   }
@@ -232,6 +238,7 @@ class VScroll extends HTMLElement {
     this.dragging = false;
     this.removeAttribute('dragging');
     this.removeAttribute('active');
+    this.removeAttribute('expanded');
     this.stopObserving();
     this.clearHideTimer();
     document.body.style.removeProperty('cursor');
@@ -246,6 +253,7 @@ class VScroll extends HTMLElement {
     if (scroll_height <= height) {
       this.removeAttribute('scrollable');
       this.removeAttribute('active');
+      this.removeAttribute('expanded');
       this.thumb.style.setProperty('--thumb_display', 'none');
       return;
     }
