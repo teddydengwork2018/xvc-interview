@@ -3,11 +3,11 @@ v-scroll {
   --v-scroll-width: 10px;
   --v-scroll-radius: 999px;
   --v-scroll-min-bar: 16px;
-  --v-scroll-track-bg: rgb(34 197 94 / 18%);
-  --v-scroll-track-outline: rgb(34 197 94 / 28%);
-  --v-scroll-bar-bg: #22c55e;
-  --v-scroll-bar-bg-hover: #16a34a;
-  --v-scroll-bar-bg-dragging: #15803d;
+  --v-scroll-track-bg: rgb(0 0 0 / 8%);
+  --v-scroll-track-outline: rgb(0 0 0 / 12%);
+  --v-scroll-bar-bg: #c7c7c7;
+  --v-scroll-bar-bg-hover: #adadad;
+  --v-scroll-bar-bg-dragging: #8f8f8f;
   --v-scroll-cursor: url('/scroll.svg') 10 10, ns-resize;
   --v-scroll-cursor-grab: url('/grab.svg') 7 7, grabbing;
   position: relative;
@@ -56,7 +56,7 @@ v-scroll > .v_scroll_track > .v_scroll_bar {
   background: var(--v-scroll-bar-bg);
   box-shadow:
     0 0 0 1px rgb(0 0 0 / 6%),
-    0 6px 12px rgb(34 197 94 / 30%);
+    0 6px 12px rgb(0 0 0 / 12%);
   transition:
     background 160ms ease,
     transform 160ms ease;
@@ -68,7 +68,7 @@ v-scroll[data-scrollable] > .v_scroll_track {
 }
 
 v-scroll > .v_scroll_track:hover {
-  background: rgb(34 197 94 / 24%);
+  background: rgb(0 0 0 / 12%);
 }
 
 v-scroll > .v_scroll_track > .v_scroll_bar:hover {

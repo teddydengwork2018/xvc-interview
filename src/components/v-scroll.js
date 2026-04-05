@@ -32,17 +32,17 @@ TEMPLATE.innerHTML = `
       position: absolute;
       width: 100%;
       border-radius: 999px;
-      background: #00ff00;
+      background: #c7c7c7;
       cursor: inherit;
       transition: background 0.2s;
     }
 
     .rail:hover .thumb {
-      background: #00cc00;
+      background: #adadad;
     }
 
     :host([dragging]) .thumb {
-      background: #009900;
+      background: #8f8f8f;
       cursor: var(--cursor_grab);
     }
 
