@@ -1,10 +1,9 @@
 v-scroll {
-  --v-scroll-gap: 10px;
   --v-scroll-hit-width: 14px;
-  --v-scroll-width: 10px;
+  --v-scroll-width: 15px;
   --v-scroll-radius: 999px;
   --v-scroll-track-padding: 2px;
-  --v-scroll-min-bar: 16px;
+  --v-scroll-min-bar: 30px;
   --v-scroll-track-bg: rgb(0 0 0 / 8%);
   --v-scroll-track-outline: rgb(0 0 0 / 12%);
   --v-scroll-bar-bg: #c7c7c7;
@@ -16,93 +15,77 @@ v-scroll {
   display: block;
 }
 
-v-scroll > .v_scroll_view {
+v-scroll::part(viewport) {
   height: 100%;
   overflow: auto;
-  padding-right: calc(var(--v-scroll-width) + var(--v-scroll-gap));
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
-v-scroll > .v_scroll_view::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+v-scroll::part(viewport)::-webkit-scrollbar {
+  display: none;
 }
 
-v-scroll > .v_scroll_view > .v_scroll_body {
-  min-height: 100%;
-}
-
-v-scroll > .v_scroll_track {
+v-scroll::part(rail) {
   position: absolute;
   inset: 0 0 0 auto;
   width: var(--v-scroll-hit-width);
-  margin: 0;
   opacity: 0;
-  transition:
-    opacity 280ms ease;
   cursor: var(--v-scroll-cursor);
+  transition: opacity 0.35s linear;
 }
 
-v-scroll > .v_scroll_track::before {
-  content: '';
+v-scroll::part(track) {
   position: absolute;
   inset: 0 0 0 auto;
   width: 6px;
   padding: 0;
-  border-radius: var(--v-scroll-radius);
   background: rgb(0 0 0 / 0%);
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0%);
   transition:
-    width 220ms ease,
-    padding 220ms ease,
-    background 220ms ease,
-    box-shadow 220ms ease;
+    width 0.22s ease,
+    padding 0.22s ease,
+    background 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
-v-scroll > .v_scroll_track > .v_scroll_bar {
+v-scroll::part(thumb) {
   position: absolute;
-  inset: var(--bar-offset, 0px) var(--v-scroll-track-padding) auto;
-  display: block;
+  top: 0;
+  left: 50%;
+  right: 0;
+  width: 35%;
   min-height: var(--v-scroll-min-bar);
-  height: var(--bar-size, 0px);
-  border-radius: inherit;
+  border-radius: var(--v-scroll-radius);
   background: var(--v-scroll-bar-bg);
-  box-shadow:
-    0 0 0 1px rgb(0 0 0 / 6%),
-    0 6px 12px rgb(0 0 0 / 12%);
-  transition:
-    background 160ms ease,
-    transform 160ms ease,
-    inset 220ms ease;
   cursor: inherit;
+  transition:
+    background 0.2s,
+    left 0.22s ease,
+    right 0.22s ease;
 }
 
-v-scroll[data-scrollable][data-active] > .v_scroll_track,
-v-scroll[data-scrollable] > .v_scroll_track:hover,
-v-scroll[data-dragging] > .v_scroll_track {
+v-scroll[scrollable][active]::part(rail),
+v-scroll[dragging]::part(rail) {
   opacity: 1;
 }
 
-v-scroll[data-scrollable][data-active] > .v_scroll_track::before,
-v-scroll[data-scrollable] > .v_scroll_track:hover::before,
-v-scroll[data-dragging] > .v_scroll_track::before {
+v-scroll[scrollable][active]::part(track),
+v-scroll[dragging]::part(track) {
   width: var(--v-scroll-width);
   padding: 0 var(--v-scroll-track-padding);
   background: var(--v-scroll-track-bg);
   box-shadow: inset 0 0 0 1px var(--v-scroll-track-outline);
 }
 
-v-scroll[data-scrollable][data-active] > .v_scroll_track > .v_scroll_bar,
-v-scroll > .v_scroll_track:hover > .v_scroll_bar {
+v-scroll[scrollable][active]::part(thumb) {
   background: var(--v-scroll-bar-bg-hover);
 }
 
-v-scroll[data-dragging] > .v_scroll_track,
-v-scroll[data-dragging] > .v_scroll_track > .v_scroll_bar {
+v-scroll[dragging]::part(rail),
+v-scroll[dragging]::part(thumb) {
   cursor: var(--v-scroll-cursor-grab);
 }
 
-v-scroll[data-dragging] > .v_scroll_track > .v_scroll_bar {
+v-scroll[dragging]::part(thumb) {
   background: var(--v-scroll-bar-bg-dragging);
 }

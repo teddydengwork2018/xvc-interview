@@ -1,106 +1,13 @@
 const TEMPLATE = document.createElement('template');
 
 TEMPLATE.innerHTML = `
-  <style>
-    :host {
-      --cursor_scroll: url('/scroll.svg') 10 10, ns-resize;
-      --cursor_grab: url('/grab.svg') 7 7, grabbing;
-      --rail_hit_width: 14px;
-      --track_width: 15px;
-      --track_padding: 2px;
-      display: block;
-      position: relative;
-    }
-
-    .viewport {
-      height: 100%;
-      overflow: auto;
-      scrollbar-width: none;
-    }
-
-    .viewport::-webkit-scrollbar {
-      display: none;
-    }
-
-    .rail {
-      position: absolute;
-      top: 2px;
-      right: 0px;
-      bottom: 2px;
-      width: var(--rail_hit_width);
-      opacity: 0;
-      cursor: var(--cursor_scroll);
-      transition: opacity 0.35s linear
-    }
-
-    .track {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 6px;
-      padding: 0;
-      background: rgb(0 0 0 / 0%);
-      box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0%);
-      transition:
-        width 0.22s ease,
-        padding 0.22s ease,
-        background 0.22s ease,
-        box-shadow 0.22s ease;
-    }
-
-    .thumb {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      right: 0;
-      width: 35%;
-      border-radius: 999px;
-      background: #c7c7c7;
-      cursor: inherit;
-      transition:
-        background 0.2s,
-        left 0.22s ease,
-        right 0.22s ease;
-    }
-
-    :host([scrollable][active]) .rail,
-    :host([dragging]) .rail,
-    .rail:hover {
-      opacity: 1;
-    }
-
-    :host([scrollable][active]) .track,
-    :host([dragging]) .track,
-    .rail:hover .track {
-      width: var(--track_width);
-      padding: 0 var(--track_padding);
-      background: rgb(0 0 0 / 8%);
-      box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%);
-    }
-
-    .rail:hover .thumb,
-    :host([scrollable][active]) .thumb {
-      background: #adadad;
-    }
-
-    :host([dragging]) .thumb {
-      background: #8f8f8f;
-      cursor: var(--cursor_grab);
-    }
-
-    :host([dragging]) .rail {
-      cursor: var(--cursor_grab);
-    }
-  </style>
-
-  <div class="viewport">
+  <div class="viewport" part="viewport">
     <slot></slot>
   </div>
 
-  <div class="rail">
-    <div class="track">
-      <div class="thumb"></div>
+  <div class="rail" part="rail">
+    <div class="track" part="track">
+      <div class="thumb" part="thumb"></div>
     </div>
   </div>
 `;
@@ -116,7 +23,6 @@ class VScroll extends HTMLElement {
     this.viewport = shadow.querySelector('.viewport');
     this.thumb = shadow.querySelector('.thumb');
     this.rail = shadow.querySelector('.rail');
-    this.track = shadow.querySelector('.track');
     this.dragging = false;
     this.start_y = 0;
     this.start_scroll = 0;
