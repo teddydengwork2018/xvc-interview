@@ -5,6 +5,9 @@ TEMPLATE.innerHTML = `
     :host {
       --cursor_scroll: url('/scroll.svg') 10 10, ns-resize;
       --cursor_grab: url('/grab.svg') 7 7, grabbing;
+      --rail_hit_width: 14px;
+      --track_width: 15px;
+      --track_padding: 2px;
       display: block;
       position: relative;
     }
@@ -22,22 +25,62 @@ TEMPLATE.innerHTML = `
     .rail {
       position: absolute;
       top: 2px;
-      right: 2px;
+      right: 0px;
       bottom: 2px;
-      width: 10px;
+      width: var(--rail_hit_width);
+      opacity: 0;
       cursor: var(--cursor_scroll);
+      transition: opacity 0.35s linear
+    }
+
+    .track {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 6px;
+      padding: 0;
+      background: rgb(0 0 0 / 0%);
+      box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0%);
+      transition:
+        width 0.22s ease,
+        padding 0.22s ease,
+        background 0.22s ease,
+        box-shadow 0.22s ease;
     }
 
     .thumb {
       position: absolute;
-      width: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      right: 0;
+      width: 35%;
       border-radius: 999px;
       background: #c7c7c7;
       cursor: inherit;
-      transition: background 0.2s;
+      transition:
+        background 0.2s,
+        left 0.22s ease,
+        right 0.22s ease;
     }
 
-    .rail:hover .thumb {
+    :host([scrollable][active]) .rail,
+    :host([dragging]) .rail,
+    .rail:hover {
+      opacity: 1;
+    }
+
+    :host([scrollable][active]) .track,
+    :host([dragging]) .track,
+    .rail:hover .track {
+      width: var(--track_width);
+      padding: 0 var(--track_padding);
+      background: rgb(0 0 0 / 8%);
+      box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%);
+    }
+
+    .rail:hover .thumb,
+    :host([scrollable][active]) .thumb {
       background: #adadad;
     }
 
@@ -56,7 +99,9 @@ TEMPLATE.innerHTML = `
   </div>
 
   <div class="rail">
-    <div class="thumb"></div>
+    <div class="track">
+      <div class="thumb"></div>
+    </div>
   </div>
 `;
 
@@ -71,12 +116,36 @@ class VScroll extends HTMLElement {
     this.viewport = shadow.querySelector('.viewport');
     this.thumb = shadow.querySelector('.thumb');
     this.rail = shadow.querySelector('.rail');
+    this.track = shadow.querySelector('.track');
     this.dragging = false;
     this.start_y = 0;
     this.start_scroll = 0;
+    this.hide_timer = 0;
     this.resize_observer = new ResizeObserver(()=>this.update());
 
-    this.onScroll = ()=>this.update();
+    this.clearHideTimer = ()=> {
+      clearTimeout(this.hide_timer);
+      this.hide_timer = 0;
+    };
+    this.showRail = ()=> {
+      this.setAttribute('active', '');
+    };
+    this.hideRail = ()=> {
+      if (this.dragging || this.rail.matches(':hover')) {
+        return;
+      }
+
+      this.removeAttribute('active');
+    };
+    this.scheduleHide = ()=> {
+      this.clearHideTimer();
+      this.hide_timer = window.setTimeout(()=>this.hideRail(), 700);
+    };
+    this.onScroll = ()=> {
+      this.update();
+      this.showRail();
+      this.scheduleHide();
+    };
     this.onMove = (event)=> {
       if (!this.dragging) {
         return;
@@ -91,12 +160,15 @@ class VScroll extends HTMLElement {
       this.dragging = false;
       this.removeAttribute('dragging');
       document.body.style.removeProperty('cursor');
+      this.scheduleHide();
       window.removeEventListener('pointermove', this.onMove);
       window.removeEventListener('pointerup', this.onUp);
     };
     this.onThumbDown = (event)=> {
       this.dragging = true;
       this.setAttribute('dragging', '');
+      this.showRail();
+      this.clearHideTimer();
       document.body.style.cursor = `url('/grab.svg') 7 7, grabbing`;
       this.start_y = event.clientY;
       this.start_scroll = this.viewport.scrollTop;
@@ -104,9 +176,18 @@ class VScroll extends HTMLElement {
       window.addEventListener('pointermove', this.onMove);
       window.addEventListener('pointerup', this.onUp);
     };
+    this.onRailEnter = ()=> {
+      this.showRail();
+      this.clearHideTimer();
+    };
+    this.onRailLeave = ()=> {
+      this.scheduleHide();
+    };
 
     this.viewport.addEventListener('scroll', this.onScroll);
     this.thumb.addEventListener('pointerdown', this.onThumbDown);
+    this.rail.addEventListener('pointerenter', this.onRailEnter);
+    this.rail.addEventListener('pointerleave', this.onRailLeave);
   }
 
   connectedCallback() {
@@ -117,9 +198,12 @@ class VScroll extends HTMLElement {
 
   disconnectedCallback() {
     this.resize_observer.disconnect();
+    this.clearHideTimer();
     document.body.style.removeProperty('cursor');
     window.removeEventListener('pointermove', this.onMove);
     window.removeEventListener('pointerup', this.onUp);
+    this.rail.removeEventListener('pointerenter', this.onRailEnter);
+    this.rail.removeEventListener('pointerleave', this.onRailLeave);
   }
 
   update() {
@@ -128,10 +212,13 @@ class VScroll extends HTMLElement {
     const top = this.viewport.scrollTop;
 
     if (scroll_height <= height) {
+      this.removeAttribute('scrollable');
+      this.removeAttribute('active');
       this.thumb.style.display = 'none';
       return;
     }
 
+    this.setAttribute('scrollable', '');
     this.thumb.style.display = 'block';
 
     const thumb_height = Math.max((height / scroll_height) * height, 30);
@@ -139,7 +226,7 @@ class VScroll extends HTMLElement {
     const y = (top / (scroll_height - height)) * max;
 
     this.thumb.style.height = `${thumb_height}px`;
-    this.thumb.style.transform = `translateY(${y}px)`;
+    this.thumb.style.transform = `translateX(-50%) translateY(${y}px)`;
   }
 }
 
