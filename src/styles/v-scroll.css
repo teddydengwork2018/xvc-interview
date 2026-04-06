@@ -3,10 +3,9 @@ v-scroll {
   --v-scroll-width: 15px;
   --v-scroll-radius: 999px;
   --v-scroll-thumb-inset: 3px;
-  --v-scroll-track-padding: 2px;
-  --v-scroll-thumb-left: auto;
-  --v-scroll-thumb-right: 3px;
-  --v-scroll-thumb-shift: 0%;
+  --v-scroll-track-padding: 3px;
+  --v-scroll-thumb-width-ratio: 0.35;
+  --v-scroll-thumb-right: calc((var(--v-scroll-width) + var(--v-scroll-track-padding) * 2) * 0.325);
   --v-scroll-thumb-min-width: 6px;
   --v-scroll-min-bar: 30px;
   --v-scroll-track-bg: rgb(0 0 0 / 8%);
@@ -56,9 +55,9 @@ v-scroll::part(track) {
 v-scroll::part(thumb) {
   position: absolute;
   top: 0;
-  left: var(--v-scroll-thumb-left);
+  left: auto;
   right: var(--v-scroll-thumb-right);
-  width: 35%;
+  width: calc(100% * var(--v-scroll-thumb-width-ratio));
   min-width: var(--v-scroll-thumb-min-width);
   display: var(--thumb_display, block);
   height: var(--thumb_height, var(--v-scroll-min-bar));
@@ -66,7 +65,7 @@ v-scroll::part(thumb) {
   border-radius: var(--v-scroll-radius);
   background: var(--v-scroll-bar-bg);
   cursor: inherit;
-  transform: translateX(var(--v-scroll-thumb-shift)) translateY(var(--thumb_y, 0px));
+  transform: translateY(var(--thumb_y, 0px));
   transition:
     background 0.2s,
     left 0.22s ease,
@@ -92,10 +91,10 @@ v-scroll[scrollable][active]::part(thumb) {
 
 v-scroll[expanded]::part(thumb),
 v-scroll[dragging]::part(thumb) {
-  --v-scroll-thumb-left: 50%;
+  left: 50%;
   background: var(--v-scroll-bar-bg-hover);
-  right: 0;
-  --v-scroll-thumb-shift: -50%;
+  right: auto;
+  transform: translateX(-50%) translateY(var(--thumb_y, 0px));
 }
 
 v-scroll[dragging]::part(rail),
